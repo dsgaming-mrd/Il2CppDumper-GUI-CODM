@@ -69,6 +69,8 @@ namespace Il2CppDumper
 
         public override ulong MapVATR(ulong addr)
         {
+            addr = NormalizeAddress(addr); // new extra
+
             var section = sections.First(x => addr >= x.addr && addr <= x.addr + x.size);
             if (section.sectname == "__bss")
             {
@@ -95,17 +97,29 @@ namespace Il2CppDumper
         {
             var codeRegistration = 0ul;
             var metadataRegistration = 0ul;
+
+            if (!TryGetInitFunctionAddrs(out var addrs))
+            {
+                MainForm.Log("ERROR: No __mod_init_func or __init_offsets section found.", Brushes.Orange);
+                return false;
+            }
+
             if (Version < 23)
             {
-                var __mod_init_func = sections.First(x => x.sectname == "__mod_init_func");
-                var addrs = ReadClassArray<ulong>(__mod_init_func.offset, __mod_init_func.size / 8);
                 foreach (var i in addrs)
                 {
                     if (i > 0)
                     {
                         var flag = false;
                         var subaddr = 0ul;
-                        Position = MapVATR(i);
+                        //Position = MapVATR(i);
+
+                        if (!TryMapVATR(i, out var initPos))
+                        {
+                            continue;
+                        }
+                        Position = initPos;
+
                         var buff = ReadBytes(4);
                         if (FeatureBytes1.SequenceEqual(buff))
                         {
@@ -163,13 +177,19 @@ namespace Il2CppDumper
                  * MOV W3, #0
                  * B sub
                  */
-                var __mod_init_func = sections.First(x => x.sectname == "__mod_init_func");
-                var addrs = ReadClassArray<ulong>(__mod_init_func.offset, __mod_init_func.size / 8);
+                
                 foreach (var i in addrs)
                 {
                     if (i > 0)
                     {
-                        Position = MapVATR(i) + 16;
+                        //Position = MapVATR(i) + 16;
+
+                        if (!TryMapVATR(i, out var initPos))
+                        {
+                            continue;
+                        }
+                        Position = initPos + 16;
+
                         var buff = ReadBytes(4);
                         if (FeatureBytes1.SequenceEqual(buff))
                         {
@@ -200,13 +220,18 @@ namespace Il2CppDumper
                  * MOV X2, #0
                  * B sub
                  */
-                var __mod_init_func = sections.First(x => x.sectname == "__mod_init_func");
-                var addrs = ReadClassArray<ulong>(__mod_init_func.offset, __mod_init_func.size / 8);
                 foreach (var i in addrs)
                 {
                     if (i > 0)
                     {
-                        Position = MapVATR(i) + 16;
+                        //Position = MapVATR(i) + 16;
+
+                        if (!TryMapVATR(i, out var initPos))
+                        {
+                            continue;
+                        }
+                        Position = initPos + 16;
+
                         var buff = ReadBytes(4);
                         if (FeatureBytes2.SequenceEqual(buff))
                         {
@@ -265,6 +290,65 @@ namespace Il2CppDumper
             sectionHelper.SetSection(SearchSectionType.Data, data);
             sectionHelper.SetSection(SearchSectionType.Bss, bss);
             return sectionHelper;
+        }
+
+        private bool TryGetInitFunctionAddrs(out ulong[] addrs)
+        {
+            var modInit = sections.FirstOrDefault(x => x.sectname == "__mod_init_func");
+            if (modInit != null)
+            {
+                addrs = ReadClassArray<ulong>(modInit.offset, modInit.size / 8);
+                return true;
+            }
+
+            var initOffsets = sections.FirstOrDefault(x => x.sectname == "__init_offsets");
+            if (initOffsets != null)
+            {
+                //MainForm.Log("Using __init_offsets for init functions.");
+                var offsets = ReadClassArray<uint>(initOffsets.offset, initOffsets.size / 4);
+                addrs = offsets.Where(x => x != 0).Select(x => vmaddr + x).ToArray();
+                return true;
+            }
+
+            addrs = Array.Empty<ulong>();
+            return false;
+        }
+
+        private ulong NormalizeAddress(ulong addr)
+        {
+            if (addr == 0)
+                throw new Exception();
+            if (addr >= vmaddr && addr < vmaddr + 0x100000000)
+            {
+                return addr;
+            }
+            return vmaddr + (addr & 0x0FFFFFFFFF);
+        }
+
+        public override ulong NormalizePointer(ulong pointer)
+        {
+            if (pointer == 0)
+                return 0;
+            if (pointer >= vmaddr && pointer < vmaddr + 0x100000000)
+            {
+                return pointer;
+            }
+            return vmaddr + (pointer & 0x0FFFFFFFFF);
+        }
+
+        private bool TryMapVATR(ulong addr, out ulong mapped)
+        {
+            mapped = 0;
+            if (addr == 0)
+                return false;
+            var normalized = NormalizeAddress(addr);
+            var section = sections.FirstOrDefault(x => normalized >= x.addr && normalized <= x.addr + x.size);
+            if (section == null || section.sectname == "__bss")
+            {
+                return false;
+            }
+            mapped = normalized - section.addr + section.offset;
+            return true;
         }
 
         public override bool CheckDump() => false;

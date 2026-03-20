@@ -111,8 +111,13 @@ namespace Il2CppDumper
     public class Il2CppAssemblyDefinition
     {
         public int imageIndex;
+        [Version(Max = 24)]
         public short customAttributeIndex;
+        [Version(Min = 24.1)]
+        public uint token;
+        [Version(Min = 20)]
         public int referencedAssemblyStart;
+        [Version(Min = 20)]
         public int referencedAssemblyCount;
         public Il2CppAssemblyNameDefinition aname;
     }
@@ -121,6 +126,7 @@ namespace Il2CppDumper
     {
         public uint nameIndex;
         public uint cultureIndex;
+        [Version(Max = 24.3)]
         public int hashValueIndex;
         public uint publicKeyIndex;
         public uint hash_alg;
@@ -140,7 +146,21 @@ namespace Il2CppDumper
         public int assemblyIndex;
         public int typeStart;
         public uint typeCount;
+
+        [Version(Min = 24)]
+        public int exportedTypeStart;
+        [Version(Min = 24)]
+        public uint exportedTypeCount;
+
         public int entryPointIndex;
+
+        [Version(Min = 24)]
+        public uint token;
+
+        [Version(Min = 24.1)]
+        public int customAttributeStart;
+        [Version(Min = 24.1)]
+        public uint customAttributeCount;
     }
 
     public class Il2CppTypeDefinition

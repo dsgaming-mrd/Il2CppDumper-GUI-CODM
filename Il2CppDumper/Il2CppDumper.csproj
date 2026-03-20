@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<OutputType>WinExe</OutputType>
 		<AssemblyName>Il2CppDumper GUI</AssemblyName>
 		<MapFileExtensions>true</MapFileExtensions>
@@ -13,7 +13,7 @@
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 		<PlatformTarget>AnyCPU</PlatformTarget>
-		<Prefer32Bit>false</Prefer32Bit>	
+		<Prefer32Bit>false</Prefer32Bit>
 		<PreBuildEvent>rem xcopy $(ProjectDir)Scripts $(ProjectDir)$(OutDir)bin /Y /I /S</PreBuildEvent>
 		<FileVersion>$(PackageVersion)</FileVersion>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
@@ -30,10 +30,10 @@
 		<ApplicationIcon>il2cppdumper.ico</ApplicationIcon>
 	</PropertyGroup>
 	<PropertyGroup>
-	  <PackageProjectUrl>https://github.com/AndnixSH/Il2CppDumper-GUI</PackageProjectUrl>
-	  <RepositoryUrl>https://github.com/AndnixSH/Il2CppDumper-GUI</RepositoryUrl>
-	  <Version>3.0.2</Version>
-	  <AssemblyVersion>$(PackageVersion)</AssemblyVersion>
+		<PackageProjectUrl>https://github.com/AndnixSH/Il2CppDumper-GUI</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/AndnixSH/Il2CppDumper-GUI</RepositoryUrl>
+		<Version>3.0.2</Version>
+		<AssemblyVersion>$(PackageVersion)</AssemblyVersion>
 	</PropertyGroup>
 	<PropertyGroup>
 		<DebugType>none</DebugType>
@@ -47,33 +47,53 @@
 		</Content>
 		<None Update="ghidra.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ghidra_wasm.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ghidra_with_struct.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="hopper-py3.py">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ida.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ida_py3.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ida_with_struct.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="ida_with_struct_py3.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="il2cpp_header_to_binja.py">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="il2cpp_header_to_ghidra.py">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>SettingsSingleFileGenerator</Generator>
@@ -92,15 +112,15 @@
 		<Compile Remove="Utils\OpenFileDialog.cs" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="il2cppdumper.ico" />
-	  <None Remove="il2cppdumper.png" />
+		<None Remove="il2cppdumper.ico" />
+		<None Remove="il2cppdumper.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Page Include="App.xaml" />
+		<Page Include="App.xaml" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Resource Include="il2cppdumper.ico" />
-	  <Resource Include="il2cppdumper.png" />
+		<Resource Include="il2cppdumper.ico" />
+		<Resource Include="il2cppdumper.png" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Update="Properties\Settings.Designer.cs">

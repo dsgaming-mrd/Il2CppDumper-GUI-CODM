@@ -119,7 +119,7 @@ namespace Il2CppDumper
         #region Il2Cpp dumper
         private bool Init(string il2cppPath, string metadataPath, out Metadata metadata, out Il2Cpp il2Cpp)
         {
-            Log("Il2cppDumper GUI for Call of Duty Mobile made by Mr D - DS Gaming form VNC Team", Brushes.Cyan);
+            Log("Il2cppDumper GUI for Call of Duty Mobile made by Mr D - DS Gaming", Brushes.Cyan);
             string Mach_O = "2";
 
             if (!use64bitMach_O)
@@ -256,20 +256,25 @@ namespace Il2CppDumper
                 if (!flag)
                 {
                     Log("ERROR: Can't use auto mode to process file, trying manual mode...", Brushes.Orange);
-                    if (string.IsNullOrEmpty(codeRegistrationTxtBox.Text) || string.IsNullOrEmpty(codeRegistrationTxtBox.Text))
+
+                    string codeRegText = null;
+                    string metaRegText = null;
+
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        codeRegText = codeRegistrationTxtBox.Text;
+                        metaRegText = metadataRegistrationTxtBox.Text;
+                    });
+
+                    if (string.IsNullOrEmpty(codeRegText) || string.IsNullOrEmpty(metaRegText))
                     {
                         Log("CodeRegistration or MetadataRegistration is empty", Brushes.Orange);
                         return false;
                     }
-                    var codeRegistration = Convert.ToUInt64(codeRegistrationTxtBox.Text, 16);
-                    var metadataRegistration = Convert.ToUInt64(metadataRegistrationTxtBox.Text, 16);
+
+                    var codeRegistration = Convert.ToUInt64(codeRegText, 16);
+                    var metadataRegistration = Convert.ToUInt64(metaRegText, 16);
                     il2Cpp.Init(codeRegistration, metadataRegistration);
-                }
-                if (il2Cpp.Version >= 27 && il2Cpp.IsDumped)
-                {
-                    var typeDef = metadata.typeDefs[0];
-                    var il2CppType = il2Cpp.types[typeDef.byvalTypeIndex];
-                    metadata.ImageBase = il2CppType.data.typeHandle - metadata.header.typeDefinitionsOffset;
                 }
             }
             catch (Exception ex)
@@ -831,13 +836,29 @@ namespace Il2CppDumper
                 return;
             }
 
+            //ActionButtonsEnabled = false;
+
+            //string binFile = binFileTxtBox.Text;
+            //string datFile = datFileTxtBox.Text;
+            //string outputPath = outputTxtBox.Text;
+
+            //await Task.Factory.StartNew(() =>
+            //{
+            //    DirectoryUtils.Delete(tempPath);
+            //    Directory.CreateDirectory(tempPath);
+
+            //    Dumper(binFile, datFile, outputPath);
+            //});
+
+            //ActionButtonsEnabled = true;
+
             ActionButtonsEnabled = false;
 
             string binFile = binFileTxtBox.Text;
             string datFile = datFileTxtBox.Text;
             string outputPath = outputTxtBox.Text;
 
-            await Task.Factory.StartNew(() =>
+            await Task.Run(() =>
             {
                 DirectoryUtils.Delete(tempPath);
                 Directory.CreateDirectory(tempPath);
@@ -846,6 +867,7 @@ namespace Il2CppDumper
             });
 
             ActionButtonsEnabled = true;
+
         }
 
         private void openFolderBtn_Click(object sender, RoutedEventArgs e)

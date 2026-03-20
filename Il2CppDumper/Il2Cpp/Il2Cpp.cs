@@ -40,6 +40,8 @@ namespace Il2CppDumper
         public abstract SectionHelper GetSectionHelper(int methodCount, int typeDefinitionsCount, int imageCount);
         public abstract bool CheckDump();
 
+        public virtual ulong NormalizePointer(ulong pointer) => pointer;
+
         protected Il2Cpp(Stream stream) : base(stream) { }
 
         public void SetProperties(double version, long metadataUsagesCount)
@@ -183,9 +185,14 @@ namespace Il2CppDumper
             types = new Il2CppType[pMetadataRegistration.typesCount];
             for (var i = 0; i < pMetadataRegistration.typesCount; ++i)
             {
-                types[i] = MapVATR<Il2CppType>(pTypes[i]);
+                //types[i] = MapVATR<Il2CppType>(pTypes[i]);
+                //types[i].Init(Version);
+                //typeDic.Add(pTypes[i], types[i]);
+
+                var typePtr = NormalizePointer(pTypes[i]);
+                types[i] = MapVATR<Il2CppType>(typePtr);
                 types[i].Init(Version);
-                typeDic.Add(pTypes[i], types[i]);
+                typeDic.Add(typePtr, types[i]);
             }
             if (Version >= 24.2)
             {
@@ -301,6 +308,8 @@ namespace Il2CppDumper
 
         public Il2CppType GetIl2CppType(ulong pointer)
         {
+            pointer = NormalizePointer(pointer); // new extra
+
             if (!typeDic.TryGetValue(pointer, out var type))
             {
                 return null;
