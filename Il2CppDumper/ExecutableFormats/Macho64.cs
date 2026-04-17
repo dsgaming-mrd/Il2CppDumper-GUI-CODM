@@ -71,11 +71,14 @@ namespace Il2CppDumper
         {
             addr = NormalizeAddress(addr); // new extra
 
-            var section = sections.First(x => addr >= x.addr && addr <= x.addr + x.size);
+            var section = sections.FirstOrDefault(x => addr >= x.addr && addr < x.addr + x.size);
+
+            if (section == null) // new extra
+                return 0; // new extra
+
             if (section.sectname == "__bss")
-            {
-                throw new Exception();
-            }
+                return 0; // new extra
+
             return addr - section.addr + section.offset;
         }
 
@@ -177,7 +180,7 @@ namespace Il2CppDumper
                  * MOV W3, #0
                  * B sub
                  */
-                
+
                 foreach (var i in addrs)
                 {
                     if (i > 0)
@@ -196,8 +199,16 @@ namespace Il2CppDumper
                             buff = ReadBytes(4);
                             if (FeatureBytes2.SequenceEqual(buff))
                             {
-                                Position -= 16;
-                                var subaddr = DecodeAdr(i + 8, ReadBytes(4));
+                                //Position -= 16;
+                                //var subaddr = DecodeAdr(i + 8, ReadBytes(4));
+
+                                Position = initPos + 8; // new
+                                var adrpX1 = ReadBytes(4); // new
+                                var addX1 = ReadBytes(4); // new
+
+                                var subaddr = DecodeAdrp(i + 8, adrpX1); // new
+                                subaddr += DecodeAdd(addX1); // new
+
                                 var rsubaddr = MapVATR(subaddr);
                                 Position = rsubaddr;
                                 codeRegistration = DecodeAdrp(subaddr, ReadBytes(4));
@@ -210,6 +221,7 @@ namespace Il2CppDumper
                     }
                 }
             }
+
             if (Version >= 24)
             {
                 /* ADRP X0, unk
@@ -336,18 +348,21 @@ namespace Il2CppDumper
             return vmaddr + (pointer & 0x0FFFFFFFFF);
         }
 
-        private bool TryMapVATR(ulong addr, out ulong mapped)
+        public bool TryMapVATR(ulong addr, out ulong result) // new extra
         {
-            mapped = 0;
-            if (addr == 0)
+            result = 0;
+
+            addr = NormalizeAddress(addr);
+
+            var section = sections.FirstOrDefault(x => addr >= x.addr && addr < x.addr + x.size);
+
+            if (section == null)
                 return false;
-            var normalized = NormalizeAddress(addr);
-            var section = sections.FirstOrDefault(x => normalized >= x.addr && normalized <= x.addr + x.size);
-            if (section == null || section.sectname == "__bss")
-            {
+
+            if (section.sectname == "__bss")
                 return false;
-            }
-            mapped = normalized - section.addr + section.offset;
+
+            result = addr - section.addr + section.offset;
             return true;
         }
 
