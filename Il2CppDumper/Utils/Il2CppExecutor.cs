@@ -46,6 +46,8 @@ namespace Il2CppDumper
 
         public string GetTypeName(Il2CppType il2CppType, bool addNamespace, bool is_nested)
         {
+            if (il2CppType == null)
+                return "object";
             switch (il2CppType.type)
             {
                 case Il2CppTypeEnum.IL2CPP_TYPE_ARRAY:
@@ -166,8 +168,12 @@ namespace Il2CppDumper
 
         public string GetGenericInstParams(Il2CppGenericInst genericInst)
         {
+            if (genericInst == null || genericInst.type_argc <= 0)
+                return string.Empty;
             var genericParameterNames = new List<string>();
             var pointers = il2Cpp.MapVATR<ulong>(genericInst.type_argv, genericInst.type_argc);
+            if (pointers == null)
+                return string.Empty;
             for (int i = 0; i < genericInst.type_argc; i++)
             {
                 var il2CppType = il2Cpp.GetIl2CppType(pointers[i]);
@@ -269,7 +275,7 @@ namespace Il2CppDumper
                 }
                 return GetTypeDefinitionFromIl2CppType(il2CppType);
             }
-            if (genericClass.typeDefinitionIndex == 4294967295 || genericClass.typeDefinitionIndex == -1)
+            if (genericClass.typeDefinitionIndex == 4294967295 || genericClass.typeDefinitionIndex == -1 || genericClass.typeDefinitionIndex < 0 || genericClass.typeDefinitionIndex >= metadata.typeDefs.Length)
             {
                 return null;
             }
@@ -282,10 +288,14 @@ namespace Il2CppDumper
             {
                 var offset = il2CppType.data.typeHandle - metadata.ImageBase - metadata.header.typeDefinitionsOffset;
                 var index = offset / (ulong)metadata.SizeOf(typeof(Il2CppTypeDefinition));
+                if (index >= (ulong)metadata.typeDefs.Length)
+                    return null;
                 return metadata.typeDefs[index];
             }
             else
             {
+                if (il2CppType.data.klassIndex < 0 || il2CppType.data.klassIndex >= metadata.typeDefs.Length)
+                    return null;
                 return metadata.typeDefs[il2CppType.data.klassIndex];
             }
         }
@@ -296,10 +306,14 @@ namespace Il2CppDumper
             {
                 var offset = il2CppType.data.genericParameterHandle - metadata.ImageBase - metadata.header.genericParametersOffset;
                 var index = offset / (ulong)metadata.SizeOf(typeof(Il2CppGenericParameter));
+                if (index >= (ulong)metadata.genericParameters.Length)
+                    return null;
                 return metadata.genericParameters[index];
             }
             else
             {
+                if (il2CppType.data.genericParameterIndex < 0 || il2CppType.data.genericParameterIndex >= metadata.genericParameters.Length)
+                    return null;
                 return metadata.genericParameters[il2CppType.data.genericParameterIndex];
             }
         }

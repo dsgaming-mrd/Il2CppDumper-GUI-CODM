@@ -1,43 +1,74 @@
-# Il2CppDumper cho Call of Duty Mobile  
+# Il2CppDumper for Call of Duty Mobile
 
-![Il2CppDumper GUI](Screenshot.png)  
+![Il2CppDumper GUI](Screenshot.png)
 
-Đây là **Unity Il2CppDumper GUI** mà tôi phát triển dựa trên mã nguồn gốc của **Perfare**.  
-Phiên bản này đã được tối ưu và chỉnh sửa để hoạt động tốt với **Call of Duty Mobile**.  
+This is a customized version of **Unity Il2CppDumper GUI**, developed based on the original source code by **Perfare**.
 
-✅ Chạy trên **Windows**  
-✅ Hỗ trợ cả **Android** và **iOS**  
-✅ Giao diện GUI trực quan, dễ sử dụng  
-✅ Có thể tạo **struct**, **dummy dll**, và xuất ra script cho IDA/Ghidra/Hopper   
+This version has been optimized and modified to work with **Call of Duty Mobile**.
 
----
-
-## 🚀 Cách sử dụng  
-
-1. Chuẩn bị file:  
-   - `libil2cpp.so` (Android) hoặc `file Executable chính của game` (iOS)  
-   - `global-metadata.dat`  
-
-2. Chạy `Il2CppDumper GUI`  
-
-3. Chọn:  
-   - **Executable file** → trỏ tới `libil2cpp.so` hoặc `file Executable chính của game`  
-   - **global-metadata.dat** → trỏ tới metadata của game  
-   - **Output directory** → chọn thư mục để lưu kết quả  
-
-4. Nhấn **Start** → tool sẽ tự động:  
-   - Dump dữ liệu  
-   - Sinh struct  
-   - Sinh dummy dll  
-   - Copy script hỗ trợ phân tích vào thư mục output  
-
-5. Mở file `dump.cs` hoặc dummy dll bằng **dnSpy/ILSpy** để phân tích.  
+- ✅ Runs on **Windows**
+- ✅ Supports both **Android** and **iOS**
+- ✅ User-friendly and intuitive GUI
+- ✅ Supports generating **structs**, **dummy DLLs**, and exporting scripts for IDA/Ghidra/Hopper
 
 ---
 
-## 🙏 Credits  
+## ⚠️ Important Notice – Encrypted Metadata
 
-- **[Perfare](https://github.com/Perfare)** – Tác giả gốc của Il2CppDumper  
-- **[AndnixSH](https://github.com/AndnixSH)** – Tác giả GUI phiên bản trước  
-- **[tien0246](https://github.com/tien0246)** – Nâng cấp Il2CppDumper (bản dành riêng CODM)  
-- **Mr D - DS Gaming** – Phát triển bản tùy biến GUI hỗ trợ CODM (Android/iOS)  
+> [!IMPORTANT]
+> **Newer versions of Call of Duty Mobile use encrypted Metadata.**
+>
+> In addition to the `Executable file` and `global-metadata.dat`, you need to prepare an additional file named **`anort`**.
+>
+> This file is used to extract the necessary data required to decrypt `global-metadata.dat`.
+
+### 📌 Where to Place the `anort` File
+
+You only need to place the `anort` file in **ONE OF THE FOLLOWING LOCATIONS**:
+
+1. In the same directory as `global-metadata.dat`.
+2. In the same directory as `Il2CppDumper GUI.exe`.
+
+> [!WARNING]
+> **What happens if the `anort` file is missing?**
+>
+> The tool will automatically use the built-in **fallback data** for the decryption process.
+>
+> However, the fallback data may not be compatible with newer CODM versions if the game has been updated or modified. This may cause errors during metadata decryption or data extraction.
+>
+> **Recommendation:** Always prepare the `anort` file corresponding to your game version to minimize errors and ensure a more stable dumping process.
+
+---
+
+## 🚀 How to Use
+
+**1. Prepare the required files:**
+
+- `libil2cpp.so` (Android) or the game's main Executable file (iOS).
+- `global-metadata.dat`.
+
+**2.** Run `Il2CppDumper GUI.exe`.
+
+**3.** Select the corresponding file paths:
+
+- **Executable file** → Select `libil2cpp.so` or the game's main Executable file.
+- **global-metadata.dat** → Select the game's metadata file.
+- **Output directory** → Select the folder where the results will be saved.
+
+**4.** Click **Start** → The tool will automatically:
+
+- Dump data.
+- Generate structs.
+- Generate dummy DLLs.
+- Copy analysis scripts into the output directory.
+
+**5.** Open `dump.cs` or the dummy DLL using **dnSpy/ILSpy** for further analysis.
+
+---
+
+## 🙏 Credits
+
+- **[Perfare](https://github.com/Perfare)** – Original creator of Il2CppDumper.
+- **[AndnixSH](https://github.com/AndnixSH)** – Creator of the previous GUI version.
+- **[tien0246](https://github.com/tien0246)** – Il2CppDumper improvements (CODM-specific version).
+- **Mr D - DS Gaming** – Developer of this customized GUI version for CODM (Android/iOS).

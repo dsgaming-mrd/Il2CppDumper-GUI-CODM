@@ -481,10 +481,19 @@ namespace Il2CppDumper
 
         private void AddMetadataUsageFieldInfo(ScriptJson json, uint index, ulong address)
         {
+            if (index >= metadata.fieldRefs.Length)
+                return;
             var fieldRef = metadata.fieldRefs[index];
+            if (fieldRef.typeIndex < 0 || fieldRef.typeIndex >= il2Cpp.types.Length)
+                return;
             var type = il2Cpp.types[fieldRef.typeIndex];
             var typeDef = GetTypeDefinition(type);
-            var fieldDef = metadata.fieldDefs[typeDef.fieldStart + fieldRef.fieldIndex];
+            if (typeDef == null)
+                return;
+            int fIdx = typeDef.fieldStart + fieldRef.fieldIndex;
+            if (fIdx < 0 || fIdx >= metadata.fieldDefs.Length)
+                return;
+            var fieldDef = metadata.fieldDefs[fIdx];
             var fieldName = executor.GetTypeName(type, true, false) + "." + metadata.GetStringFromIndex(fieldDef.nameIndex);
             var scriptMetadata = new ScriptMetadata();
             json.ScriptMetadata.Add(scriptMetadata);
@@ -494,6 +503,8 @@ namespace Il2CppDumper
 
         private void AddMetadataUsageStringLiteral(ScriptJson json, uint index, ulong address)
         {
+            if (index >= metadata.stringLiterals.Length)
+                return;
             var scriptString = new ScriptString();
             json.ScriptString.Add(scriptString);
             scriptString.Address = il2Cpp.GetRVA(address);
@@ -502,6 +513,8 @@ namespace Il2CppDumper
 
         private void AddMetadataUsageMethodRef(ScriptJson json, uint index, ulong address)
         {
+            if (index >= il2Cpp.methodSpecs.Length)
+                return;
             var methodSpec = il2Cpp.methodSpecs[index];
             var scriptMetadataMethod = new ScriptMetadataMethod();
             json.ScriptMetadataMethod.Add(scriptMetadataMethod);

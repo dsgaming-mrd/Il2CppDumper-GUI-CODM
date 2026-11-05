@@ -205,11 +205,17 @@ namespace Il2CppDumper
 
         public string ReadStringToNull(ulong addr)
         {
+            if (addr >= (ulong)Length)
+                return string.Empty;
             Position = addr;
             var bytes = new List<byte>();
-            byte b;
-            while ((b = ReadByte()) != 0)
+            while (Position < Length)
+            {
+                byte b = ReadByte();
+                if (b == 0)
+                    break;
                 bytes.Add(b);
+            }
             return Encoding.UTF8.GetString(bytes.ToArray());
         }
 

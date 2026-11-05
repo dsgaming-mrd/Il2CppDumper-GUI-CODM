@@ -144,6 +144,10 @@ namespace Il2CppDumper
         {
             if (!stringCache.TryGetValue(index, out var result))
             {
+                if (index >= header.stringSize)
+                {
+                    return string.Empty;
+                }
                 result = ReadStringToNull(header.stringOffset + index);
                 stringCache.Add(index, result);
             }

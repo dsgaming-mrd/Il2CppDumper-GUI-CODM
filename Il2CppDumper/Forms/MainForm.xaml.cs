@@ -138,6 +138,7 @@ namespace Il2CppDumper
 
             Log("Initializing metadata...");
             var metadataBytes = File.ReadAllBytes(metadataPath);
+            MetadataDecrypter.Decrypt(metadataBytes);
             metadata = new Metadata(new MemoryStream(metadataBytes));
             Log($"Metadata Version: {metadata.Version}");
             Log("Initializing il2cpp file...");
@@ -671,12 +672,29 @@ namespace Il2CppDumper
         #region Logging
         public static void Log(string text)
         {
-            main.Log(text);
+            if (main != null)
+                main.Log(text);
+            else
+                Console.WriteLine(text);
         }
 
         public static void Log(string text, object text2)
         {
-            main.Log(string.Format(text, text2));
+            if (text2 is System.Windows.Media.SolidColorBrush brush)
+            {
+                if (main != null)
+                    main.Log(text, brush);
+                else
+                    Console.WriteLine(text);
+            }
+            else
+            {
+                string formatted = string.Format(text, text2);
+                if (main != null)
+                    main.Log(formatted);
+                else
+                    Console.WriteLine(formatted);
+            }
         }
 
         //Color list /*http://www.flounder.com/csharp_color_table.htm*/
