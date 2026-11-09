@@ -1,4 +1,4 @@
-﻿using Bluegrams.Application;
+using Bluegrams.Application;
 using Il2CppDumper.Forms;
 using Il2CppDumper.Properties;
 using Il2CppDumper.Utils;
@@ -138,7 +138,7 @@ namespace Il2CppDumper
 
             Log("Initializing metadata...");
             var metadataBytes = File.ReadAllBytes(metadataPath);
-            MetadataDecrypter.Decrypt(metadataBytes);
+            MetadataDecrypter.Decrypt(metadataBytes, metadataPath);
             metadata = new Metadata(new MemoryStream(metadataBytes));
             Log($"Metadata Version: {metadata.Version}");
             Log("Initializing il2cpp file...");
@@ -256,26 +256,29 @@ namespace Il2CppDumper
                 }
                 if (!flag)
                 {
-                    Log("ERROR: Can't use auto mode to process file, trying manual mode...", Brushes.Orange);
+                    Log("ERROR: Can't use auto mode to detect registrations.", Brushes.Orange);
 
                     string codeRegText = null;
                     string metaRegText = null;
 
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        codeRegText = codeRegistrationTxtBox.Text;
-                        metaRegText = metadataRegistrationTxtBox.Text;
+                        codeRegText = codeRegistrationTxtBox.Text?.Trim();
+                        metaRegText = metadataRegistrationTxtBox.Text?.Trim();
                     });
 
                     if (string.IsNullOrEmpty(codeRegText) || string.IsNullOrEmpty(metaRegText))
                     {
-                        Log("CodeRegistration or MetadataRegistration is empty", Brushes.Orange);
+                        Log("ERROR: Could not automatically detect CodeRegistration and MetadataRegistration.", Brushes.Red);
+                        Log("Please enter CodeRegistration and MetadataRegistration manually in the text boxes above.", Brushes.Orange);
                         return false;
                     }
-
-                    var codeRegistration = Convert.ToUInt64(codeRegText, 16);
-                    var metadataRegistration = Convert.ToUInt64(metaRegText, 16);
-                    il2Cpp.Init(codeRegistration, metadataRegistration);
+                    else
+                    {
+                        var codeRegistration = Convert.ToUInt64(codeRegText, 16);
+                        var metadataRegistration = Convert.ToUInt64(metaRegText, 16);
+                        il2Cpp.Init(codeRegistration, metadataRegistration);
+                    }
                 }
             }
             catch (Exception ex)

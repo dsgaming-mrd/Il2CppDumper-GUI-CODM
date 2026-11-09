@@ -170,98 +170,75 @@ namespace Il2CppDumper
                     }
                 }
             }
-            if (Version == 23)
+            if (Version >= 23)
             {
-                /* ADRP X0, unk
-                 * ADD X0, X0, unk
-                 * ADR X1, sub
-                 * NOP
-                 * MOV X2, #0
-                 * MOV W3, #0
-                 * B sub
-                 */
-
                 foreach (var i in addrs)
                 {
-                    if (i > 0)
+                    if (i == 0)
+                        continue;
+
+                    if (!TryMapVATR(i, out var initPos))
                     {
-                        //Position = MapVATR(i) + 16;
+                        continue;
+                    }
 
-                        if (!TryMapVATR(i, out var initPos))
-                        {
-                            continue;
-                        }
-                        Position = initPos + 16;
+                    for (int offset = 8; offset <= 48; offset += 4)
+                    {
+                        Position = initPos + (ulong)offset;
+                        var b1 = ReadBytes(4);
+                        var b2 = ReadBytes(4);
+                        bool isMatch = (FeatureBytes1.SequenceEqual(b1) && FeatureBytes2.SequenceEqual(b2)) ||
+                                       (FeatureBytes2.SequenceEqual(b1) && FeatureBytes1.SequenceEqual(b2));
 
-                        var buff = ReadBytes(4);
-                        if (FeatureBytes1.SequenceEqual(buff))
+                        if (isMatch)
                         {
-                            buff = ReadBytes(4);
-                            if (FeatureBytes2.SequenceEqual(buff))
+                            ulong[] x1CandidateAddrs = new ulong[] { i + (ulong)offset - 8, i + 8 };
+                            ulong[] x1CandidateFilePos = new ulong[] { initPos + (ulong)offset - 8, initPos + 8 };
+
+                            for (int c = 0; c < x1CandidateAddrs.Length; c++)
                             {
-                                //Position -= 16;
-                                //var subaddr = DecodeAdr(i + 8, ReadBytes(4));
+                                Position = x1CandidateFilePos[c];
+                                var inst1 = ReadBytes(4);
+                                var inst2 = ReadBytes(4);
+                                ulong subaddr = 0;
 
-                                Position = initPos + 8; // new
-                                var adrpX1 = ReadBytes(4); // new
-                                var addX1 = ReadBytes(4); // new
+                                if (IsAdr(inst1))
+                                {
+                                    subaddr = DecodeAdr(x1CandidateAddrs[c], inst1);
+                                }
+                                else
+                                {
+                                    subaddr = DecodeAdrp(x1CandidateAddrs[c], inst1) + DecodeAdd(inst2);
+                                }
 
-                                var subaddr = DecodeAdrp(i + 8, adrpX1); // new
-                                subaddr += DecodeAdd(addX1); // new
+                                if (subaddr != 0 && TryMapVATR(subaddr, out var rsubaddr))
+                                {
+                                    Position = rsubaddr;
+                                    var c1 = ReadBytes(4);
+                                    var c2 = ReadBytes(4);
+                                    ulong cReg = DecodeAdrp(subaddr, c1) + DecodeAdd(c2);
 
-                                var rsubaddr = MapVATR(subaddr);
-                                Position = rsubaddr;
-                                codeRegistration = DecodeAdrp(subaddr, ReadBytes(4));
-                                codeRegistration += DecodeAdd(ReadBytes(4));
-                                Position = rsubaddr + 8;
-                                metadataRegistration = DecodeAdrp(subaddr + 8, ReadBytes(4));
-                                metadataRegistration += DecodeAdd(ReadBytes(4));
+                                    Position = rsubaddr + 8;
+                                    var m1 = ReadBytes(4);
+                                    var m2 = ReadBytes(4);
+                                    ulong mReg = DecodeAdrp(subaddr + 8, m1) + DecodeAdd(m2);
+
+                                    if (cReg != 0 && mReg != 0 && TryMapVATR(cReg, out _) && TryMapVATR(mReg, out _))
+                                    {
+                                        codeRegistration = cReg;
+                                        metadataRegistration = mReg;
+                                        break;
+                                    }
+                                }
                             }
                         }
+
+                        if (codeRegistration != 0 && metadataRegistration != 0)
+                            break;
                     }
-                }
-            }
 
-            if (Version >= 24)
-            {
-                /* ADRP X0, unk
-                 * ADD X0, X0, unk
-                 * ADR X1, sub
-                 * NOP
-                 * MOV W3, #0
-                 * MOV X2, #0
-                 * B sub
-                 */
-                foreach (var i in addrs)
-                {
-                    if (i > 0)
-                    {
-                        //Position = MapVATR(i) + 16;
-
-                        if (!TryMapVATR(i, out var initPos))
-                        {
-                            continue;
-                        }
-                        Position = initPos + 16;
-
-                        var buff = ReadBytes(4);
-                        if (FeatureBytes2.SequenceEqual(buff))
-                        {
-                            buff = ReadBytes(4);
-                            if (FeatureBytes1.SequenceEqual(buff))
-                            {
-                                Position -= 16;
-                                var subaddr = DecodeAdr(i + 8, ReadBytes(4));
-                                var rsubaddr = MapVATR(subaddr);
-                                Position = rsubaddr;
-                                codeRegistration = DecodeAdrp(subaddr, ReadBytes(4));
-                                codeRegistration += DecodeAdd(ReadBytes(4));
-                                Position = rsubaddr + 8;
-                                metadataRegistration = DecodeAdrp(subaddr + 8, ReadBytes(4));
-                                metadataRegistration += DecodeAdd(ReadBytes(4));
-                            }
-                        }
-                    }
+                    if (codeRegistration != 0 && metadataRegistration != 0)
+                        break;
                 }
             }
             if (codeRegistration != 0 && metadataRegistration != 0)

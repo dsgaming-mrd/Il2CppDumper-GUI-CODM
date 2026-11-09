@@ -139,10 +139,8 @@ namespace Il2CppDumper
 
                 if (!flag)
                 {
-                    Console.WriteLine("Auto-search failed. Using known registrations for codmvn: CodeRegistration=0x10C783968, MetadataRegistration=0x10C9F7FB8");
-                    ulong codeRegistration = 0x10C783968;
-                    ulong metadataRegistration = 0x10C9F7FB8;
-                    il2Cpp.Init(codeRegistration, metadataRegistration);
+                    Console.WriteLine("Auto-search failed! Could not find CodeRegistration and MetadataRegistration.");
+                    return false;
                 }
                 else
                 {
